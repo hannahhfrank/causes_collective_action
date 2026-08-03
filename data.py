@@ -107,7 +107,7 @@ c3=gtd_ss.sort_values(by=["gw_codes"]).gw_codes.unique()
 
 # Dichotomize
 dichotomize(df,"protest_event_counts","d_protest",25)
-dichotomize(df,"riot_event_counts","d_riot",10)
+dichotomize(df,"riot_event_counts","d_riot",5)
 dichotomize(df,"sb_fatalities","d_sb",0)
 dichotomize(df,"osv_fatalities","d_osv",0)
 dichotomize(df,"ns_fatalities","d_ns",0)

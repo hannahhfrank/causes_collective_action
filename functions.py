@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import PredefinedSplit,RandomizedSearchCV
-from sklearn.metrics import roc_auc_score, precision_recall_curve, auc, brier_score_loss
+from sklearn.metrics import roc_auc_score, precision_recall_curve, auc, brier_score_loss, balanced_accuracy_score
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn import linear_model
@@ -281,14 +281,16 @@ def gen_model(y, x, target, inputs, model_fit=RandomForestClassifier(random_stat
     precision, recall, thres = precision_recall_curve(t[target], t["preds_proba"])
     aupr = auc(recall, precision)
     auroc = roc_auc_score(t[target], t["preds_proba"])
-    evals = {"brier": brier, "aupr": aupr, "auroc": auroc}
+    accuary = balanced_accuracy_score(t[target],  t["preds"])
+    evals = {"brier": brier, "aupr": aupr, "auroc": auroc, "accuary": accuary}
         
     val=out_df.loc[(out_df["year"]>=2017)&(out_df["year"]<=2018)]
     brier = brier_score_loss(val[target], val["preds_proba"])
     precision, recall, thres = precision_recall_curve(val[target], val["preds_proba"])
     aupr = auc(recall, precision)
     auroc = roc_auc_score(val[target], val["preds_proba"])
-    evals_val = {"brier": brier, "aupr": aupr, "auroc": auroc}
+    accuary = balanced_accuracy_score(val[target],  val["preds"])
+    evals_val = {"brier": brier, "aupr": aupr, "auroc": auroc, "accuary": accuary}
 
     if int_methods == False:
             

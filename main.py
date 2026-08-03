@@ -3,7 +3,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.dummy import DummyClassifier
 import numpy as np 
 from functions import gen_model
-from sklearn.metrics import roc_auc_score,precision_recall_curve,auc,brier_score_loss
+from sklearn.metrics import roc_auc_score,precision_recall_curve,auc,brier_score_loss,balanced_accuracy_score
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import os
@@ -224,6 +224,8 @@ ensemble = (history_war_df.preds_proba*weights_war_n[0])+ \
 # Make df and save            
 ensemble_war=pd.concat([history_war_df[["country","year","d_civil_war"]],pd.DataFrame(ensemble)],axis=1)
 ensemble_war.columns=["country","year","d_civil_war","preds_proba"]
+ensemble_war["preds"] =  0
+ensemble_war.loc[ensemble_war["preds_proba"]>=0.5,"preds"]=1
 ensemble_war=ensemble_war.reset_index(drop=True)
 ensemble_war.to_csv("out/ensemble_war.csv")
 
@@ -244,38 +246,48 @@ aupr = auc(recall, precision)
 # AUROC
 auroc = roc_auc_score(ensemble_war_s.d_civil_war, ensemble_war_s.preds_proba)
 
+# Accuracy
+accuary = balanced_accuracy_score(ensemble_war_s.d_civil_war, ensemble_war_s.preds)
+
 # Save
-evals_war_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc}
+evals_war_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc, "accuary": accuary}
 evals_war_ensemble_df = pd.DataFrame.from_dict(evals_war_ensemble, orient='index').reset_index()
 evals_war_ensemble_df.to_csv("out/evals_war_ensemble_df.csv")
 
 print(f"{round(base_war_evals['aupr'],5)} &  \\\
       {round(base_war_evals['auroc'],5)} &  \\\
-      {round(base_war_evals['brier'],5)}")
+      {round(base_war_evals['brier'],5)} &  \\\
+      {round(base_war_evals['accuary'],5)}")
       
 print(f"{round(history_war_evals['aupr'],5)} &  \\\
       {round(history_war_evals['auroc'],5)} &  \\\
-      {round(history_war_evals['brier'],5)}")
+      {round(history_war_evals['brier'],5)} &  \\\
+      {round(history_war_evals['accuary'],5)}")
       
 print(f"{round(demog_war_evals['aupr'],5)} &  \\\
       {round(demog_war_evals['auroc'],5)} &  \\\
-      {round(demog_war_evals['brier'],5)}")
-
+      {round(demog_war_evals['brier'],5)} &  \\\
+      {round(demog_war_evals['accuary'],5)}")      
+      
 print(f"{round(geog_war_evals['aupr'],5)} &  \\\
       {round(geog_war_evals['auroc'],5)} &  \\\
-      {round(geog_war_evals['brier'],5)}")
+      {round(geog_war_evals['brier'],5)} &  \\\
+      {round(geog_war_evals['accuary'],5)}") 
       
 print(f"{round(econ_war_evals['aupr'],5)} &  \\\
       {round(econ_war_evals['auroc'],5)} &  \\\
-      {round(econ_war_evals['brier'],5)}")
-           
+      {round(econ_war_evals['brier'],5)} &  \\\
+      {round(econ_war_evals['accuary'],5)}") 
+
 print(f"{round(pol_war_evals['aupr'],5)} &  \\\
-       {round(pol_war_evals['auroc'],5)} &  \\\
-       {round(pol_war_evals['brier'],5)}")          
+      {round(pol_war_evals['auroc'],5)} &  \\\
+      {round(pol_war_evals['brier'],5)} &  \\\
+      {round(pol_war_evals['accuary'],5)}") 
       
 print(f"{round(evals_war_ensemble['aupr'],5)} &  \\\
-       {round(evals_war_ensemble['auroc'],5)} &  \\\
-       {round(evals_war_ensemble['brier'],5)}")   
+      {round(evals_war_ensemble['auroc'],5)} &  \\\
+      {round(evals_war_ensemble['brier'],5)} &  \\\
+      {round(evals_war_ensemble['accuary'],5)}")  
        
  
                                 ######################
@@ -428,6 +440,8 @@ ensemble = (history_conflict_df.preds_proba*weights_conflict_n[0])+ \
 # Make df and save                        
 ensemble_conflict=pd.concat([history_conflict_df[["country","year","d_civil_conflict"]],pd.DataFrame(ensemble)],axis=1)
 ensemble_conflict.columns=["country","year","d_civil_conflict","preds_proba"]
+ensemble_conflict["preds"] =  0
+ensemble_conflict.loc[ensemble_conflict["preds_proba"]>=0.5,"preds"]=1
 ensemble_conflict=ensemble_conflict.reset_index(drop=True)
 ensemble_conflict.to_csv("out/ensemble_conflict.csv")
 
@@ -436,7 +450,7 @@ ensemble_conflict.to_csv("out/ensemble_conflict.csv")
 ###################
 
 # Evaluate the ensemble in the test data 
-ensemble_conflict_s=ensemble_conflict.loc[(ensemble_war["year"]>=2019)&(ensemble_war["year"]<=2023)]
+ensemble_conflict_s=ensemble_conflict.loc[(ensemble_conflict["year"]>=2019)&(ensemble_conflict["year"]<=2023)]
 
 # Brier
 brier = brier_score_loss(ensemble_conflict_s.d_civil_conflict, ensemble_conflict_s.preds_proba)
@@ -448,39 +462,50 @@ aupr = auc(recall, precision)
 # AUROC
 auroc = roc_auc_score(ensemble_conflict_s.d_civil_conflict, ensemble_conflict_s.preds_proba)
 
+# Accuracy
+accuary = balanced_accuracy_score(ensemble_conflict_s.d_civil_conflict, ensemble_conflict_s.preds)
+
 # Save
-evals_conflict_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc}
+evals_conflict_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc, "accuary": accuary}
 evals_conflict_ensemble_df = pd.DataFrame.from_dict(evals_conflict_ensemble, orient='index').reset_index()
 evals_conflict_ensemble_df.to_csv("out/evals_conflict_ensemble_df.csv")
 
 
 print(f"{round(base_conflict_evals['aupr'],5)} &  \\\
       {round(base_conflict_evals['auroc'],5)} &  \\\
-      {round(base_conflict_evals['brier'],5)}")
+      {round(base_conflict_evals['brier'],5)} &  \\\
+      {round(base_conflict_evals['accuary'],5)}")
       
 print(f"{round(history_conflict_evals['aupr'],5)} &  \\\
       {round(history_conflict_evals['auroc'],5)} &  \\\
-      {round(history_conflict_evals['brier'],5)}")
+      {round(history_conflict_evals['brier'],5)} &  \\\
+      {round(history_conflict_evals['accuary'],5)}")
       
 print(f"{round(demog_conflict_evals['aupr'],5)} &  \\\
       {round(demog_conflict_evals['auroc'],5)} &  \\\
-      {round(demog_conflict_evals['brier'],5)}")
-
+      {round(demog_conflict_evals['brier'],5)} &  \\\
+      {round(demog_conflict_evals['accuary'],5)}")      
+      
 print(f"{round(geog_conflict_evals['aupr'],5)} &  \\\
       {round(geog_conflict_evals['auroc'],5)} &  \\\
-      {round(geog_conflict_evals['brier'],5)}")
-
+      {round(geog_conflict_evals['brier'],5)} &  \\\
+      {round(geog_conflict_evals['accuary'],5)}") 
+      
 print(f"{round(econ_conflict_evals['aupr'],5)} &  \\\
       {round(econ_conflict_evals['auroc'],5)} &  \\\
-      {round(econ_conflict_evals['brier'],5)}")
-           
+      {round(econ_conflict_evals['brier'],5)} &  \\\
+      {round(econ_conflict_evals['accuary'],5)}") 
+
 print(f"{round(pol_conflict_evals['aupr'],5)} &  \\\
-       {round(pol_conflict_evals['auroc'],5)} &  \\\
-       {round(pol_conflict_evals['brier'],5)}")          
+      {round(pol_conflict_evals['auroc'],5)} &  \\\
+      {round(pol_conflict_evals['brier'],5)} &  \\\
+      {round(pol_conflict_evals['accuary'],5)}") 
       
 print(f"{round(evals_conflict_ensemble['aupr'],5)} &  \\\
-       {round(evals_conflict_ensemble['auroc'],5)} &  \\\
-       {round(evals_conflict_ensemble['brier'],5)}")   
+      {round(evals_conflict_ensemble['auroc'],5)} &  \\\
+      {round(evals_conflict_ensemble['brier'],5)} &  \\\
+      {round(evals_conflict_ensemble['accuary'],5)}")  
+        
              
                                 ###############
                                 ### Protest ###
@@ -699,6 +724,8 @@ ensemble = (history_protest_df.preds_proba*weights_protest_n[0])+ \
 # Make df and save                
 ensemble_protest=pd.concat([history_protest_df[["country","year","d_protest"]],pd.DataFrame(ensemble)],axis=1)
 ensemble_protest.columns=["country","year","d_protest","preds_proba"]
+ensemble_protest["preds"] =  0
+ensemble_protest.loc[ensemble_protest["preds_proba"]>=0.5,"preds"]=1
 ensemble_protest=ensemble_protest.reset_index(drop=True)
 ensemble_protest.to_csv("out/ensemble_protest.csv")
 
@@ -707,7 +734,7 @@ ensemble_protest.to_csv("out/ensemble_protest.csv")
 ###################
 
 # Evaluate the ensemble in the test data 
-ensemble_protest_s=ensemble_protest.loc[(ensemble_war["year"]>=2019)&(ensemble_war["year"]<=2023)]
+ensemble_protest_s=ensemble_protest.loc[(ensemble_protest["year"]>=2019)&(ensemble_protest["year"]<=2023)]
 
 # Brier
 brier = brier_score_loss(ensemble_protest_s.d_protest, ensemble_protest_s.preds_proba)
@@ -719,40 +746,49 @@ aupr = auc(recall, precision)
 # AROC
 auroc = roc_auc_score(ensemble_protest_s.d_protest, ensemble_protest_s.preds_proba)
 
+# Accuracy
+accuary = balanced_accuracy_score(ensemble_protest_s.d_protest, ensemble_protest_s.preds)
+
 # Save
-evals_protest_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc}
+evals_protest_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc, "accuary": accuary}
 evals_protest_ensemble_df = pd.DataFrame.from_dict(evals_protest_ensemble, orient='index').reset_index()
 evals_protest_ensemble_df.to_csv("out/evals_protest_ensemble_df.csv")
 
 
 print(f"{round(base_protest_evals['aupr'],5)} &  \\\
       {round(base_protest_evals['auroc'],5)} &  \\\
-      {round(base_protest_evals['brier'],5)}")
+      {round(base_protest_evals['brier'],5)} &  \\\
+      {round(base_protest_evals['accuary'],5)}")
       
 print(f"{round(history_protest_evals['aupr'],5)} &  \\\
       {round(history_protest_evals['auroc'],5)} &  \\\
-      {round(history_protest_evals['brier'],5)}")
+      {round(history_protest_evals['brier'],5)} &  \\\
+      {round(history_protest_evals['accuary'],5)}")
       
 print(f"{round(demog_protest_evals['aupr'],5)} &  \\\
       {round(demog_protest_evals['auroc'],5)} &  \\\
-      {round(demog_protest_evals['brier'],5)}")
-
+      {round(demog_protest_evals['brier'],5)} &  \\\
+      {round(demog_protest_evals['accuary'],5)}")      
+      
 print(f"{round(geog_protest_evals['aupr'],5)} &  \\\
       {round(geog_protest_evals['auroc'],5)} &  \\\
-      {round(geog_protest_evals['brier'],5)}")
-
+      {round(geog_protest_evals['brier'],5)} &  \\\
+      {round(geog_protest_evals['accuary'],5)}") 
+      
 print(f"{round(econ_protest_evals['aupr'],5)} &  \\\
       {round(econ_protest_evals['auroc'],5)} &  \\\
-      {round(econ_protest_evals['brier'],5)}")
-           
+      {round(econ_protest_evals['brier'],5)} &  \\\
+      {round(econ_protest_evals['accuary'],5)}") 
+
 print(f"{round(pol_protest_evals['aupr'],5)} &  \\\
-       {round(pol_protest_evals['auroc'],5)} &  \\\
-       {round(pol_protest_evals['brier'],5)}")          
+      {round(pol_protest_evals['auroc'],5)} &  \\\
+      {round(pol_protest_evals['brier'],5)} &  \\\
+      {round(pol_protest_evals['accuary'],5)}") 
       
 print(f"{round(evals_protest_ensemble['aupr'],5)} &  \\\
-       {round(evals_protest_ensemble['auroc'],5)} &  \\\
-       {round(evals_protest_ensemble['brier'],5)}")          
-      
+      {round(evals_protest_ensemble['auroc'],5)} &  \\\
+      {round(evals_protest_ensemble['brier'],5)} &  \\\
+      {round(evals_protest_ensemble['accuary'],5)}") 
         
                                     #############
                                     ### Riots ###
@@ -970,6 +1006,8 @@ ensemble = (history_riot_df.preds_proba*weights_riot_n[0])+ \
 # Make df and save                       
 ensemble_riot=pd.concat([history_riot_df[["country","year","d_riot"]],pd.DataFrame(ensemble)],axis=1)
 ensemble_riot.columns=["country","year","d_riot","preds_proba"]
+ensemble_riot["preds"] =  0
+ensemble_riot.loc[ensemble_riot["preds_proba"]>=0.5,"preds"]=1
 ensemble_riot=ensemble_riot.reset_index(drop=True)
 ensemble_riot.to_csv("out/ensemble_riot.csv")
 
@@ -978,7 +1016,7 @@ ensemble_riot.to_csv("out/ensemble_riot.csv")
 ###################
 
 # Evaluate the ensemble in the test data 
-ensemble_riot_s = ensemble_riot.loc[(ensemble_war["year"]>=2019)&(ensemble_war["year"]<=2023)]
+ensemble_riot_s = ensemble_riot.loc[(ensemble_riot["year"]>=2019)&(ensemble_riot["year"]<=2023)]
 
 # Brier
 brier = brier_score_loss(ensemble_riot_s.d_riot, ensemble_riot_s.preds_proba)
@@ -990,39 +1028,49 @@ aupr = auc(recall, precision)
 # AUROC
 auroc = roc_auc_score(ensemble_riot_s.d_riot, ensemble_riot_s.preds_proba)
 
+# Accuracy
+accuary = balanced_accuracy_score(ensemble_riot_s.d_riot, ensemble_riot_s.preds)
+
 # Save
-evals_riot_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc}
+evals_riot_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc, "accuary": accuary}
 evals_riot_ensemble_df = pd.DataFrame.from_dict(evals_riot_ensemble, orient='index').reset_index()
 evals_riot_ensemble_df.to_csv("out/evals_riot_ensemble_df.csv")
 
 
 print(f"{round(base_riot_evals['aupr'],5)} &  \\\
       {round(base_riot_evals['auroc'],5)} &  \\\
-      {round(base_riot_evals['brier'],5)}")
+      {round(base_riot_evals['brier'],5)} &  \\\
+      {round(base_riot_evals['accuary'],5)}")
       
 print(f"{round(history_riot_evals['aupr'],5)} &  \\\
       {round(history_riot_evals['auroc'],5)} &  \\\
-      {round(history_riot_evals['brier'],5)}")
+      {round(history_riot_evals['brier'],5)} &  \\\
+      {round(history_riot_evals['accuary'],5)}")
       
 print(f"{round(demog_riot_evals['aupr'],5)} &  \\\
       {round(demog_riot_evals['auroc'],5)} &  \\\
-      {round(demog_riot_evals['brier'],5)}")
-
+      {round(demog_riot_evals['brier'],5)} &  \\\
+      {round(demog_riot_evals['accuary'],5)}")      
+      
 print(f"{round(geog_riot_evals['aupr'],5)} &  \\\
       {round(geog_riot_evals['auroc'],5)} &  \\\
-      {round(geog_riot_evals['brier'],5)}")
-
+      {round(geog_riot_evals['brier'],5)} &  \\\
+      {round(geog_riot_evals['accuary'],5)}") 
+      
 print(f"{round(econ_riot_evals['aupr'],5)} &  \\\
       {round(econ_riot_evals['auroc'],5)} &  \\\
-      {round(econ_riot_evals['brier'],5)}")
-           
+      {round(econ_riot_evals['brier'],5)} &  \\\
+      {round(econ_riot_evals['accuary'],5)}") 
+
 print(f"{round(pol_riot_evals['aupr'],5)} &  \\\
-       {round(pol_riot_evals['auroc'],5)} &  \\\
-       {round(pol_riot_evals['brier'],5)}")          
+      {round(pol_riot_evals['auroc'],5)} &  \\\
+      {round(pol_riot_evals['brier'],5)} &  \\\
+      {round(pol_riot_evals['accuary'],5)}") 
       
 print(f"{round(evals_riot_ensemble['aupr'],5)} &  \\\
-       {round(evals_riot_ensemble['auroc'],5)} &  \\\
-       {round(evals_riot_ensemble['brier'],5)}")  
+      {round(evals_riot_ensemble['auroc'],5)} &  \\\
+      {round(evals_riot_ensemble['brier'],5)} &  \\\
+      {round(evals_riot_ensemble['accuary'],5)}") 
       
         
                                 #################
@@ -1214,6 +1262,8 @@ ensemble = (history_terror_df.preds_proba*weights_terror_n[0])+ \
 # Make df and save                       
 ensemble_terror=pd.concat([history_terror_df[["country","year","d_terror"]],pd.DataFrame(ensemble)],axis=1)
 ensemble_terror.columns=["country","year","d_terror","preds_proba"]
+ensemble_terror["preds"] =  0
+ensemble_terror.loc[ensemble_terror["preds_proba"]>=0.5,"preds"]=1
 ensemble_terror=ensemble_terror.reset_index(drop=True)
 ensemble_terror.to_csv("out/ensemble_terror.csv")
 
@@ -1222,7 +1272,7 @@ ensemble_terror.to_csv("out/ensemble_terror.csv")
 ###################
 
 # Evaluate the ensemble in the test data 
-ensemble_terror_s=ensemble_terror.loc[(ensemble_war["year"]>=2019)&(ensemble_war["year"]<=2023)]
+ensemble_terror_s=ensemble_terror.loc[(ensemble_terror["year"]>=2019)&(ensemble_terror["year"]<=2023)]
 
 # Brier
 brier = brier_score_loss(ensemble_terror_s.d_terror, ensemble_terror_s.preds_proba)
@@ -1234,40 +1284,50 @@ aupr = auc(recall, precision)
 # AUROC
 auroc = roc_auc_score(ensemble_terror_s.d_terror, ensemble_terror_s.preds_proba)
 
+# Accuracy
+accuary = balanced_accuracy_score(ensemble_terror_s.d_terror, ensemble_terror_s.preds)
+
 # Save
-evals_terror_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc}
+evals_terror_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc, "accuary": accuary}
 evals_terror_ensemble_df = pd.DataFrame.from_dict(evals_terror_ensemble, orient='index').reset_index()
 evals_terror_ensemble_df.to_csv("out/evals_terror_ensemble_df.csv")
 
-
 print(f"{round(base_terror_evals['aupr'],5)} &  \\\
       {round(base_terror_evals['auroc'],5)} &  \\\
-      {round(base_terror_evals['brier'],5)}")
+      {round(base_terror_evals['brier'],5)} &  \\\
+      {round(base_terror_evals['accuary'],5)}")
       
 print(f"{round(history_terror_evals['aupr'],5)} &  \\\
       {round(history_terror_evals['auroc'],5)} &  \\\
-      {round(history_terror_evals['brier'],5)}")
+      {round(history_terror_evals['brier'],5)} &  \\\
+      {round(history_terror_evals['accuary'],5)}")
       
 print(f"{round(demog_terror_evals['aupr'],5)} &  \\\
       {round(demog_terror_evals['auroc'],5)} &  \\\
-      {round(demog_terror_evals['brier'],5)}")
-
+      {round(demog_terror_evals['brier'],5)} &  \\\
+      {round(demog_terror_evals['accuary'],5)}")      
+      
 print(f"{round(geog_terror_evals['aupr'],5)} &  \\\
       {round(geog_terror_evals['auroc'],5)} &  \\\
-      {round(geog_terror_evals['brier'],5)}")
-
+      {round(geog_terror_evals['brier'],5)} &  \\\
+      {round(geog_terror_evals['accuary'],5)}") 
+      
 print(f"{round(econ_terror_evals['aupr'],5)} &  \\\
       {round(econ_terror_evals['auroc'],5)} &  \\\
-      {round(econ_terror_evals['brier'],5)}")
-           
+      {round(econ_terror_evals['brier'],5)} &  \\\
+      {round(econ_terror_evals['accuary'],5)}") 
+
 print(f"{round(pol_terror_evals['aupr'],5)} &  \\\
-       {round(pol_terror_evals['auroc'],5)} &  \\\
-       {round(pol_terror_evals['brier'],5)}")          
+      {round(pol_terror_evals['auroc'],5)} &  \\\
+      {round(pol_terror_evals['brier'],5)} &  \\\
+      {round(pol_terror_evals['accuary'],5)}") 
       
 print(f"{round(evals_terror_ensemble['aupr'],5)} &  \\\
-       {round(evals_terror_ensemble['auroc'],5)} &  \\\
-       {round(evals_terror_ensemble['brier'],5)}")  
-      
+      {round(evals_terror_ensemble['auroc'],5)} &  \\\
+      {round(evals_terror_ensemble['brier'],5)} &  \\\
+      {round(evals_terror_ensemble['accuary'],5)}") 
+
+
                             ###################
                             ### State-based ###
                             ###################
@@ -1425,6 +1485,8 @@ ensemble = (history_sb_df.preds_proba*weights_sb_n[0])+ \
 # Make df and save            
 ensemble_sb=pd.concat([history_sb_df[["country","year","d_sb"]],pd.DataFrame(ensemble)],axis=1)
 ensemble_sb.columns=["country","year","d_sb","preds_proba"]
+ensemble_sb["preds"] =  0
+ensemble_sb.loc[ensemble_sb["preds_proba"]>=0.5,"preds"]=1
 ensemble_sb=ensemble_sb.reset_index(drop=True)
 ensemble_sb.to_csv("out/ensemble_sb.csv")
 
@@ -1433,7 +1495,7 @@ ensemble_sb.to_csv("out/ensemble_sb.csv")
 ###################
 
 # Evaluate the ensemble in the test data 
-ensemble_sb_s=ensemble_sb.loc[(ensemble_war["year"]>=2019)&(ensemble_war["year"]<=2023)]
+ensemble_sb_s=ensemble_sb.loc[(ensemble_sb["year"]>=2019)&(ensemble_sb["year"]<=2023)]
 
 # Brier
 brier = brier_score_loss(ensemble_sb_s.d_sb, ensemble_sb_s.preds_proba)
@@ -1445,39 +1507,50 @@ aupr = auc(recall, precision)
 # AUROC
 auroc = roc_auc_score(ensemble_sb_s.d_sb, ensemble_sb_s.preds_proba)
 
+# Accuracy
+accuary = balanced_accuracy_score(ensemble_sb_s.d_sb, ensemble_sb_s.preds)
+
 # Save
-evals_sb_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc}
+evals_sb_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc, "accuary": accuary}
 evals_sb_ensemble_df = pd.DataFrame.from_dict(evals_sb_ensemble, orient='index').reset_index()
 evals_sb_ensemble_df.to_csv("out/evals_sb_ensemble_df.csv")
 
 
 print(f"{round(base_sb_evals['aupr'],5)} &  \\\
       {round(base_sb_evals['auroc'],5)} &  \\\
-      {round(base_sb_evals['brier'],5)}")
+      {round(base_sb_evals['brier'],5)} &  \\\
+      {round(base_sb_evals['accuary'],5)}")
       
 print(f"{round(history_sb_evals['aupr'],5)} &  \\\
       {round(history_sb_evals['auroc'],5)} &  \\\
-      {round(history_sb_evals['brier'],5)}")
+      {round(history_sb_evals['brier'],5)} &  \\\
+      {round(history_sb_evals['accuary'],5)}")
       
 print(f"{round(demog_sb_evals['aupr'],5)} &  \\\
       {round(demog_sb_evals['auroc'],5)} &  \\\
-      {round(demog_sb_evals['brier'],5)}")
-
+      {round(demog_sb_evals['brier'],5)} &  \\\
+      {round(demog_sb_evals['accuary'],5)}")      
+      
 print(f"{round(geog_sb_evals['aupr'],5)} &  \\\
       {round(geog_sb_evals['auroc'],5)} &  \\\
-      {round(geog_sb_evals['brier'],5)}")
-
+      {round(geog_sb_evals['brier'],5)} &  \\\
+      {round(geog_sb_evals['accuary'],5)}") 
+      
 print(f"{round(econ_sb_evals['aupr'],5)} &  \\\
       {round(econ_sb_evals['auroc'],5)} &  \\\
-      {round(econ_sb_evals['brier'],5)}")
-           
+      {round(econ_sb_evals['brier'],5)} &  \\\
+      {round(econ_sb_evals['accuary'],5)}") 
+
 print(f"{round(pol_sb_evals['aupr'],5)} &  \\\
-       {round(pol_sb_evals['auroc'],5)} &  \\\
-       {round(pol_sb_evals['brier'],5)}")          
+      {round(pol_sb_evals['auroc'],5)} &  \\\
+      {round(pol_sb_evals['brier'],5)} &  \\\
+      {round(pol_sb_evals['accuary'],5)}") 
       
 print(f"{round(evals_sb_ensemble['aupr'],5)} &  \\\
-       {round(evals_sb_ensemble['auroc'],5)} &  \\\
-       {round(evals_sb_ensemble['brier'],5)}")  
+      {round(evals_sb_ensemble['auroc'],5)} &  \\\
+      {round(evals_sb_ensemble['brier'],5)} &  \\\
+      {round(evals_sb_ensemble['accuary'],5)}") 
+
 
                             ##########################
                             ### One-sided violence ###
@@ -1636,6 +1709,8 @@ ensemble = (history_osv_df.preds_proba*weights_osv_n[0])+ \
 # Make df and save            
 ensemble_osv=pd.concat([history_osv_df[["country","year","d_osv"]],pd.DataFrame(ensemble)],axis=1)
 ensemble_osv.columns=["country","year","d_osv","preds_proba"]
+ensemble_osv["preds"] =  0
+ensemble_osv.loc[ensemble_osv["preds_proba"]>=0.5,"preds"]=1
 ensemble_osv=ensemble_osv.reset_index(drop=True)
 ensemble_osv.to_csv("out/ensemble_osv.csv")
 
@@ -1644,7 +1719,7 @@ ensemble_osv.to_csv("out/ensemble_osv.csv")
 ###################
 
 # Evaluate the ensemble in the test data 
-ensemble_osv_s=ensemble_osv.loc[(ensemble_war["year"]>=2019)&(ensemble_war["year"]<=2023)]
+ensemble_osv_s=ensemble_osv.loc[(ensemble_osv["year"]>=2019)&(ensemble_osv["year"]<=2023)]
 
 # Brier
 brier = brier_score_loss(ensemble_osv_s.d_osv, ensemble_osv_s.preds_proba)
@@ -1656,39 +1731,50 @@ aupr = auc(recall, precision)
 # AUROC
 auroc = roc_auc_score(ensemble_osv_s.d_osv, ensemble_osv_s.preds_proba)
 
+# Accuracy
+accuary = balanced_accuracy_score(ensemble_osv_s.d_osv, ensemble_osv_s.preds)
+
 # Save
-evals_osv_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc}
+evals_osv_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc, "accuary": accuary}
 evals_osv_ensemble_df = pd.DataFrame.from_dict(evals_osv_ensemble, orient='index').reset_index()
 evals_osv_ensemble_df.to_csv("out/evals_osv_ensemble_df.csv")
 
 
 print(f"{round(base_osv_evals['aupr'],5)} &  \\\
       {round(base_osv_evals['auroc'],5)} &  \\\
-      {round(base_osv_evals['brier'],5)}")
+      {round(base_osv_evals['brier'],5)} &  \\\
+      {round(base_osv_evals['accuary'],5)}")
       
 print(f"{round(history_osv_evals['aupr'],5)} &  \\\
       {round(history_osv_evals['auroc'],5)} &  \\\
-      {round(history_osv_evals['brier'],5)}")
+      {round(history_osv_evals['brier'],5)} &  \\\
+      {round(history_osv_evals['accuary'],5)}")
       
 print(f"{round(demog_osv_evals['aupr'],5)} &  \\\
       {round(demog_osv_evals['auroc'],5)} &  \\\
-      {round(demog_osv_evals['brier'],5)}")
-
+      {round(demog_osv_evals['brier'],5)} &  \\\
+      {round(demog_osv_evals['accuary'],5)}")      
+      
 print(f"{round(geog_osv_evals['aupr'],5)} &  \\\
       {round(geog_osv_evals['auroc'],5)} &  \\\
-      {round(geog_osv_evals['brier'],5)}")
-
+      {round(geog_osv_evals['brier'],5)} &  \\\
+      {round(geog_osv_evals['accuary'],5)}") 
+      
 print(f"{round(econ_osv_evals['aupr'],5)} &  \\\
       {round(econ_osv_evals['auroc'],5)} &  \\\
-      {round(econ_osv_evals['brier'],5)}")
-           
+      {round(econ_osv_evals['brier'],5)} &  \\\
+      {round(econ_osv_evals['accuary'],5)}") 
+
 print(f"{round(pol_osv_evals['aupr'],5)} &  \\\
-       {round(pol_osv_evals['auroc'],5)} &  \\\
-       {round(pol_osv_evals['brier'],5)}")          
+      {round(pol_osv_evals['auroc'],5)} &  \\\
+      {round(pol_osv_evals['brier'],5)} &  \\\
+      {round(pol_osv_evals['accuary'],5)}") 
       
 print(f"{round(evals_osv_ensemble['aupr'],5)} &  \\\
-       {round(evals_osv_ensemble['auroc'],5)} &  \\\
-       {round(evals_osv_ensemble['brier'],5)}")  
+      {round(evals_osv_ensemble['auroc'],5)} &  \\\
+      {round(evals_osv_ensemble['brier'],5)} &  \\\
+      {round(evals_osv_ensemble['accuary'],5)}") 
+
             
                             #######################
                             ### Non-state based ###
@@ -1847,6 +1933,8 @@ ensemble = (history_ns_df.preds_proba*weights_ns_n[0])+ \
 # Make df and save                        
 ensemble_ns=pd.concat([history_ns_df[["country","year","d_ns"]],pd.DataFrame(ensemble)],axis=1)
 ensemble_ns.columns=["country","year","d_ns","preds_proba"]
+ensemble_ns["preds"] =  0
+ensemble_ns.loc[ensemble_ns["preds_proba"]>=0.5,"preds"]=1
 ensemble_ns=ensemble_ns.reset_index(drop=True)
 ensemble_ns.to_csv("out/ensemble_ns.csv")
 
@@ -1855,7 +1943,7 @@ ensemble_ns.to_csv("out/ensemble_ns.csv")
 ###################
 
 # Evaluate the ensemble in the test data 
-ensemble_ns_s=ensemble_ns.loc[(ensemble_war["year"]>=2019)&(ensemble_war["year"]<=2023)]
+ensemble_ns_s=ensemble_ns.loc[(ensemble_ns["year"]>=2019)&(ensemble_ns["year"]<=2023)]
 
 # Beier
 brier = brier_score_loss(ensemble_ns_s.d_ns, ensemble_ns_s.preds_proba)
@@ -1867,40 +1955,48 @@ aupr = auc(recall, precision)
 # AUROC
 auroc = roc_auc_score(ensemble_ns_s.d_ns, ensemble_ns_s.preds_proba)
 
+# Accuracy
+accuary = balanced_accuracy_score(ensemble_ns_s.d_ns, ensemble_ns_s.preds)
+
 # Save
-evals_ns_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc}
+evals_ns_ensemble = {"brier": brier, "aupr": aupr, "auroc": auroc, "accuary": accuary}
 evals_ns_ensemble_df = pd.DataFrame.from_dict(evals_ns_ensemble, orient='index').reset_index()
 evals_ns_ensemble_df.to_csv("out/evals_ns_ensemble_df.csv")
 
 print(f"{round(base_ns_evals['aupr'],5)} &  \\\
       {round(base_ns_evals['auroc'],5)} &  \\\
-      {round(base_ns_evals['brier'],5)}")
+      {round(base_ns_evals['brier'],5)} &  \\\
+      {round(base_ns_evals['accuary'],5)}")
       
 print(f"{round(history_ns_evals['aupr'],5)} &  \\\
       {round(history_ns_evals['auroc'],5)} &  \\\
-      {round(history_ns_evals['brier'],5)}")
+      {round(history_ns_evals['brier'],5)} &  \\\
+      {round(history_ns_evals['accuary'],5)}")
       
 print(f"{round(demog_ns_evals['aupr'],5)} &  \\\
       {round(demog_ns_evals['auroc'],5)} &  \\\
-      {round(demog_ns_evals['brier'],5)}")
-
+      {round(demog_ns_evals['brier'],5)} &  \\\
+      {round(demog_ns_evals['accuary'],5)}")      
+      
 print(f"{round(geog_ns_evals['aupr'],5)} &  \\\
       {round(geog_ns_evals['auroc'],5)} &  \\\
-      {round(geog_ns_evals['brier'],5)}")
-
+      {round(geog_ns_evals['brier'],5)} &  \\\
+      {round(geog_ns_evals['accuary'],5)}") 
+      
 print(f"{round(econ_ns_evals['aupr'],5)} &  \\\
       {round(econ_ns_evals['auroc'],5)} &  \\\
-      {round(econ_ns_evals['brier'],5)}")
-           
+      {round(econ_ns_evals['brier'],5)} &  \\\
+      {round(econ_ns_evals['accuary'],5)}") 
+
 print(f"{round(pol_ns_evals['aupr'],5)} &  \\\
-       {round(pol_ns_evals['auroc'],5)} &  \\\
-       {round(pol_ns_evals['brier'],5)}")          
+      {round(pol_ns_evals['auroc'],5)} &  \\\
+      {round(pol_ns_evals['brier'],5)} &  \\\
+      {round(pol_ns_evals['accuary'],5)}") 
       
 print(f"{round(evals_ns_ensemble['aupr'],5)} &  \\\
-       {round(evals_ns_ensemble['auroc'],5)} &  \\\
-       {round(evals_ns_ensemble['brier'],5)}")  
-
-
-
-
-
+      {round(evals_ns_ensemble['auroc'],5)} &  \\\
+      {round(evals_ns_ensemble['brier'],5)} &  \\\
+      {round(evals_ns_ensemble['accuary'],5)}") 
+      
+      
+      
